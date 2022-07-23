@@ -193,37 +193,10 @@ class ConfigTab(QWidget):
         self.onChatLocationChanged()
 
     def recalculateWeaponFields(self):
-        loadout = Loadout(*self.app.config.selected_loadout.value)
-        weapon = ALL_WEAPONS[loadout.weapon]
-        amp = ALL_ATTACHMENTS.get(loadout.amp)
-        ammo = weapon["ammo"] * (1 + (0.1 * loadout.damage_enh))
-        decay = weapon["decay"] * Decimal(1 + (0.1 * loadout.damage_enh))
-        if amp:
-            ammo += amp["ammo"]
-            decay += amp["decay"]
-        self.ammo_burn_text.setText(str(int(ammo)))
-        self.weapon_decay_text.setText("%.6f" % decay)
-
-        scope = SCOPES.get(loadout.scope)
-        if scope:
-            decay += scope["decay"]
-            ammo += scope["ammo"]
-
-        sight_1 = SIGHTS.get(loadout.sight_1)
-        if sight_1:
-            decay += sight_1["decay"]
-            ammo += sight_1["ammo"]
-
-        sight_2 = SIGHTS.get(loadout.sight_2)
-        if sight_2:
-            decay += sight_2["decay"]
-            ammo += sight_2["ammo"]
-
-        self.app.combat_module.decay = decay
-        self.app.combat_module.ammo_burn = ammo
-
+        self.app.combat_module.recalculateWeaponFields()
+        self.ammo_burn_text.setText(str(int(self.app.combat_module.ammo_burn)))
+        self.weapon_decay_text.setText("%.6f" % self.app.combat_module.decay)
         self.app.save_config()
-        self.app.combat_module.update_active_run_cost()
 
     def onNameChanged(self):
         self.app.config.name = self.character_name.text()

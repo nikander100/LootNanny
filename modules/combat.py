@@ -350,8 +350,6 @@ class CombatModule(BaseModule):
         if amp:
             ammo += amp["ammo"]
             decay += amp["decay"]
-        #self.ammo_burn_text.setText(str(int(ammo)))
-        #self.weapon_decay_text.setText("%.6f" % decay)
 
         scope = SCOPES.get(loadout.scope)
         if scope:
@@ -370,8 +368,6 @@ class CombatModule(BaseModule):
 
         self.app.combat_module.decay = decay
         self.app.combat_module.ammo_burn = ammo
-
-        #self.app.save_config()
         self.update_active_run_cost()
 
     def update_active_run_cost(self):
