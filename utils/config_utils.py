@@ -56,7 +56,8 @@ def version_1_to_2(old_version: dict) -> dict:
                       old_version.pop("sight_2", "None"),
                       old_version.pop("scope", "None"),
                       old_version.pop("damage_enhancers", 0),
-                      old_version.pop("accuracy_enhancers", 0))
+                      old_version.pop("accuracy_enhancers", 0),
+                      ole_version.pop("keymap","None"))
     old_version["loadouts"] = [loadout]
 
     twitch_config = old_version.pop("twitch", {})

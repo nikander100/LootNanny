@@ -39,7 +39,7 @@ class ConfigTab(QWidget):
         self.character_name.editingFinished.connect(self.onNameChanged)
 
         self.weapons = WeaponTable({"Name": [], "Amp": [], "Scope": [], "Sight 1": [],
-                         "Sight 2": [], "Damage": [], "Accuracy": []}, 25, 7)
+                         "Sight 2": [], "Damage": [], "Accuracy": [], "KeyMap": []}, 25, 8)
         self.weapons.itemClicked.connect(self.weapon_table_selected)
         self.redraw_weapons()
         form_inputs.addRow("Weapons", self.weapons)
@@ -134,7 +134,7 @@ class ConfigTab(QWidget):
 
     def loadout_to_data(self):
         d = {"Name": [], "Amp": [], "Scope": [], "Sight 1": [],
-                         "Sight 2": [], "Damage": [], "Accuracy": []}
+                         "Sight 2": [], "Damage": [], "Accuracy": [], "KeyMap": []}
         for loadout in self.app.config.loadouts.value:
             if isinstance(loadout, list):
                 loadout = Loadout(*loadout)
@@ -146,6 +146,7 @@ class ConfigTab(QWidget):
             d["Sight 2"].append(loadout.sight_2)
             d["Damage"].append(loadout.damage_enh)
             d["Accuracy"].append(loadout.accuracy_enh)
+            d["KeyMap"].append(loadout.keymap)
         return d
 
     def redraw_weapons(self):
@@ -163,8 +164,8 @@ class ConfigTab(QWidget):
     def add_weapon_cancled(self):
         self.add_weapon_btn.setEnabled(True)
 
-    def on_added_weapon(self, weapon: str, amp: str, scope: str, sight_1: str, sight_2: str, d_enh: int, a_enh: int):
-        new_loadout = Loadout(weapon, amp, scope, sight_1, sight_2, d_enh, a_enh)
+    def on_added_weapon(self, weapon: str, amp: str, scope: str, sight_1: str, sight_2: str, d_enh: int, a_enh: int, km: str):
+        new_loadout = Loadout(weapon, amp, scope, sight_1, sight_2, d_enh, a_enh, km)
         self.app.config.loadouts.value.append(new_loadout)
         self.app.config.save()
         self.redraw_weapons()
@@ -259,6 +260,7 @@ class WeaponPopOut(QWidget):
         self.sight_2 = "None"
         self.damage_enhancers = 0
         self.accuracy_enhancers = 0
+        self.keymap = ""
 
         self.layout = self.create_widgets()
         self.resize_to_contents()
@@ -309,6 +311,11 @@ class WeaponPopOut(QWidget):
         self.accuracy_enhancers_txt.editingFinished.connect(self.on_field_changed)
         layout.addLayout(form_inputs)
 
+        self.keymap_txt = QLineEdit(text="0")
+        form_inputs.addRow("KeyMap:", self.keymap_txt)
+        self.keymap_txt.editingFinished.connect(self.on_field_changed)
+        layout.addLayout(form_inputs)
+
         h_layout = QHBoxLayout()
 
         cancel = QPushButton("Cancel")
@@ -337,7 +344,8 @@ class WeaponPopOut(QWidget):
             self.sight_1,
             self.sight_2,
             self.damage_enhancers,
-            self.accuracy_enhancers
+            self.accuracy_enhancers,
+            self.keymap
         )
         self.close()
 
@@ -349,6 +357,7 @@ class WeaponPopOut(QWidget):
         self.amp = self.amp_option.currentText()
         self.damage_enhancers = min(10, int(self.damage_enhancers_txt.text()))
         self.accuracy_enhancers = min(10, int(self.accuracy_enhancers_txt.text()))
+        self.keymap = self.keymap_txt.text()
 
         self.damage_enhancers_txt.setText(str(self.damage_enhancers))
         self.accuracy_enhancers_txt.setText(str(self.accuracy_enhancers))

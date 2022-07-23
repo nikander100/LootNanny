@@ -3,6 +3,7 @@ from datetime import datetime
 import time
 from typing import List
 from decimal import Decimal
+import keyboard
 import threading
 import os
 import json
@@ -13,7 +14,9 @@ from chat import BaseChatRow, CombatRow, LootInstance, SkillRow, EnhancerBreakag
 from helpers import dt_to_ts, ts_to_dt, format_filename
 from ocr import screenshot_window
 from modules.markup import MarkupStore
-
+from data.weapons import ALL_WEAPONS
+from data.sights_and_scopes import SIGHTS, SCOPES
+from data.attachments import ALL_ATTACHMENTS
 
 RUNS_FILE = format_filename("runs.json")
 RUNS_DIRECTORY = format_filename("")
@@ -34,7 +37,7 @@ def take_screenshot(delay_ms, directory, glob: GlobalInstance):
     im.save(screenshot_fullpath)
 
 
-Loadout = namedtuple("Loadout", ["weapon", "amp", "scope", "sight_1", "sight_2", "damage_enh", "accuracy_enh"])
+Loadout = namedtuple("Loadout", ["weapon", "amp", "scope", "sight_1", "sight_2", "damage_enh", "accuracy_enh", "keymap"])
 
 
 class HuntingTrip(object):
@@ -338,12 +341,52 @@ class CombatModule(BaseModule):
         self.multiplier_graph = None
         self.return_graph = None
 
+    def recalculateWeaponFields(self):
+        loadout = Loadout(*self.app.config.selected_loadout.value)
+        weapon = ALL_WEAPONS[loadout.weapon]
+        amp = ALL_ATTACHMENTS.get(loadout.amp)
+        ammo = weapon["ammo"] * (1 + (0.1 * loadout.damage_enh))
+        decay = weapon["decay"] * Decimal(1 + (0.1 * loadout.damage_enh))
+        if amp:
+            ammo += amp["ammo"]
+            decay += amp["decay"]
+        #self.ammo_burn_text.setText(str(int(ammo)))
+        #self.weapon_decay_text.setText("%.6f" % decay)
+
+        scope = SCOPES.get(loadout.scope)
+        if scope:
+            decay += scope["decay"]
+            ammo += scope["ammo"]
+
+        sight_1 = SIGHTS.get(loadout.sight_1)
+        if sight_1:
+            decay += sight_1["decay"]
+            ammo += sight_1["ammo"]
+
+        sight_2 = SIGHTS.get(loadout.sight_2)
+        if sight_2:
+            decay += sight_2["decay"]
+            ammo += sight_2["ammo"]
+
+        self.app.combat_module.decay = decay
+        self.app.combat_module.ammo_burn = ammo
+
+        #self.app.save_config()
+        self.update_active_run_cost()
+
     def update_active_run_cost(self):
         if self.active_run:
             cost = Decimal(self.ammo_burn) / Decimal(10000) + self.decay
             self.active_run.cost_per_shot = cost
 
     def tick(self, lines: List[BaseChatRow]):
+        for i in self.app.config.loadouts.value:
+            self.app.config.selected_loadout = i
+            if keyboard.is_pressed(self.app.config.selected_loadout.value[7]):
+                print(self.app.config.selected_loadout.value[0])
+                self.recalculateWeaponFields()
+                break
+
         if self.is_logging and not self.is_paused:
 
             if self.active_run is None:
