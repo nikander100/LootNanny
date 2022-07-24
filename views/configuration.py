@@ -193,7 +193,7 @@ class ConfigTab(QWidget):
         self.onChatLocationChanged()
 
     def recalculateWeaponFields(self):
-        self.app.combat_module.recalculateWeaponFields()
+        self.app.combat_module.recalculateWeaponLoadout()
         self.ammo_burn_text.setText(str(int(self.app.combat_module.ammo_burn)))
         self.weapon_decay_text.setText("%.6f" % self.app.combat_module.decay)
         self.app.save_config()

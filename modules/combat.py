@@ -341,7 +341,7 @@ class CombatModule(BaseModule):
         self.multiplier_graph = None
         self.return_graph = None
 
-    def recalculateWeaponFields(self):
+    def recalculateWeaponLoadout(self):
         loadout = Loadout(*self.app.config.selected_loadout.value)
         weapon = ALL_WEAPONS[loadout.weapon]
         amp = ALL_ATTACHMENTS.get(loadout.amp)
