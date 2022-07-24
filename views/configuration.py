@@ -9,8 +9,8 @@ from PyQt5.QtWidgets import QFileDialog, QTextEdit, QFormLayout, QHBoxLayout, QH
 from data.weapons import ALL_WEAPONS
 from data.sights_and_scopes import SIGHTS, SCOPES
 from data.attachments import ALL_ATTACHMENTS
-from modules.combat import Loadout
-from utils.tables import WeaponTable
+from modules.combat import Loadout, HealingLoadout
+from utils.tables import WeaponTable, HealingToolTable
 
 
 class ConfigTab(QWidget):
@@ -44,6 +44,11 @@ class ConfigTab(QWidget):
         self.redraw_weapons()
         form_inputs.addRow("Weapons", self.weapons)
 
+        self.healing_tools = HealingToolTable({"Name": [], "Heal": [], "Economy": [], "KeyMap": []}, 25, 4)
+        self.healing_tools.itemClicked.connect(self.healing_tools_table_selected)
+        self.redraw_healing_tools()
+        form_inputs.addRow("Healing Tools", self.healing_tools)
+
         # Other Windows
         self.select_loadout_btn = QPushButton("Select Loadout")
         self.select_loadout_btn.released.connect(self.select_loadout)
@@ -58,6 +63,10 @@ class ConfigTab(QWidget):
         self.add_weapon_btn = QPushButton("Add Weapon Loadout")
         self.add_weapon_btn.released.connect(self.add_new_weapon)
         form_inputs.addWidget(self.add_weapon_btn)
+
+        self.add_healing_tool_btn = QPushButton("Add Healing Tool Loadout")
+        self.add_healing_tool_btn.released.connect(self.add_new_healing_tool)
+        form_inputs.addWidget(self.add_healing_tool_btn)
 
         self.active_loadout = QLineEdit(text="", enabled=False)
         form_inputs.addRow("Active Loadout:", self.active_loadout)
@@ -122,6 +131,19 @@ class ConfigTab(QWidget):
         self.selected_index = indexes[-1].row()
         self.delete_weapon_btn.setEnabled(True)
 
+    def healing_tools_table_selected(self):
+        indexes = self.healing_tools.selectionModel().selectedRows()
+        if not indexes:
+            self.delete_healing_tools_btn.hide()
+            self.select_loadout_btn.hide()
+            self.selected_index = None
+            return
+
+        self.delete_healing_tools_btn.show()
+        self.select_loadout_btn.show()
+        self.selected_index = indexes[-1].row()
+        self.delete_healing_tools_btn.setEnabled(True)
+
     def select_loadout(self):
         self.app.config.selected_loadout = self.app.config.loadouts.value[self.selected_index]
         self.active_loadout.setText(self.app.config.selected_loadout.value[0])
@@ -149,9 +171,25 @@ class ConfigTab(QWidget):
             d["KeyMap"].append(loadout.keymap)
         return d
 
+    def healingLoadout_to_data(self):
+        d = {"Name": [], "Heal": [], "Economy": [], "KeyMap": []}
+        for healingLoadout in self.app.config.healingLoadouts.value:
+            if isinstance(healingLoadout, list):
+                healingLoadout = HealingLoadout(*healingLoadout)
+            healingLoadout: HealingLoadout
+            d["Name"].append(healingLoadout.heal_tool)
+            d["Heal"].append(healingLoadout.heal_enh)
+            d["Economy"].append(healingLoadout.economy_enh)
+            d["KeyMap"].append(healingLoadout.keymap)
+        return d
+
     def redraw_weapons(self):
         self.weapons.clear()
         self.weapons.setData(self.loadout_to_data())
+
+    def redraw_healing_tools(self):
+        self.healing_tools.clear()
+        self.healing_tools.setData(self.healingLoadout_to_data())
 
     def add_new_weapon(self):
         weapon_popout = WeaponPopOut(self)
@@ -160,6 +198,14 @@ class ConfigTab(QWidget):
         else:
             self.set_stylesheet(weapon_popout, "dark.qss")
         self.add_weapon_btn.setEnabled(False)
+
+    def add_new_healing_tool(self):
+        #weapon_popout = WeaponPopOut(self)
+        if self.app.config.theme == "light":
+            self.set_stylesheet(weapon_popout, "light.qss")
+        else:
+            self.set_stylesheet(weapon_popout, "dark.qss")
+        self.add_healing_tool_btn.setEnabled(False)
 
     def add_weapon_cancled(self):
         self.add_weapon_btn.setEnabled(True)

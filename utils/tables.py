@@ -99,6 +99,18 @@ class WeaponTable(BaseTableView):
 
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
+class HealingToolTable(BaseTableView):
+    COLUMNS = ("Name", "Heal", "Economy", "KeyMap")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        header = self.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
+
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
 class CraftingTableView(BaseTableView):
     COLUMNS = ("Resource", "Per Click", "Total", "TT Cost", "Markup", "Total Cost")

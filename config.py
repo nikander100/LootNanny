@@ -4,7 +4,7 @@ from typing import List
 
 from helpers import format_filename
 import utils.config_utils as CU
-from modules.combat import Loadout
+from modules.combat import Loadout, HealingLoadout
 
 
 CONFIG_FILENAME = format_filename("config.json")
@@ -39,6 +39,7 @@ class Config(object):
     # Combat Configuration
     loadouts: List[Loadout] = CU.ConfigValue(None)
     selected_loadout: Loadout = CU.ConfigValue(None)
+    healingLoadouts: List[HealingLoadout] = CU.ConfigValue(None)
 
     # Streaming and Twitch
     streamer_layout = CU.JsonConfigValue(STREAMER_LAYOUT_DEFAULT)
@@ -53,6 +54,7 @@ class Config(object):
         # Initialize mutable options
         self.initialized = False
         self.loadouts = []
+        self.healingLoadouts = []
         self.twitch_commands_enabled = ["commands", "allreturns", "toploots", "info"]
 
         self.load_config()
