@@ -23,6 +23,7 @@ try:
     from views.twitch import TwitchTab
     from modules.combat import MarkupSingleton
     from views.crafting import CraftingTab
+    from views.loadouts import LoadoutsTab
 except Exception as e:
     log_crash(e)
 
@@ -52,6 +53,8 @@ class LootNanny(QWidget):
 
         self.config_tab = ConfigTab(self)
 
+        self.loadouts_tab = LoadoutsTab(self)
+
         self.chat_reader = ChatReader(self)
 
         # Create the tab widget with two tabs
@@ -66,6 +69,7 @@ class LootNanny(QWidget):
         tabs.addTab(self.twitch, "Twitch")
 
         tabs.addTab(self.config_tab, "Config")
+        tabs.addTab(self.loadouts_tab, "Loadouts")
         layout.addWidget(tabs)
 
         statusBar = QStatusBar()

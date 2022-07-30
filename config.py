@@ -39,7 +39,7 @@ class Config(object):
     # Combat Configuration
     loadouts: List[Loadout] = CU.ConfigValue(None)
     selected_loadout: Loadout = CU.ConfigValue(None)
-    healingLoadouts: List[HealingLoadout] = CU.ConfigValue(None)
+    healing_loadouts: List[HealingLoadout] = CU.ConfigValue(None)
 
     # Streaming and Twitch
     streamer_layout = CU.JsonConfigValue(STREAMER_LAYOUT_DEFAULT)
@@ -54,7 +54,7 @@ class Config(object):
         # Initialize mutable options
         self.initialized = False
         self.loadouts = []
-        self.healingLoadouts = []
+        self.healing_loadouts = []
         self.twitch_commands_enabled = ["commands", "allreturns", "toploots", "info"]
 
         self.load_config()
