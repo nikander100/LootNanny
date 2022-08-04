@@ -23,6 +23,7 @@ class ChatType(str, enum.Enum):
     ENHANCER = "enhancer"
     LOOT = "loot"
     GLOBAL = "global"
+    # DIMINISHED = "diminished"
 
 
 class BaseChatRow(object):
@@ -33,9 +34,15 @@ class BaseChatRow(object):
 
 class HealRow(BaseChatRow):
 
-    def __init__(self, amount):
+    def __init__(self, amount=0.0):
         super().__init__()
         self.amount = float(amount)
+
+# class DiminishedRow(BaseChatRow):
+
+#     def __init__(self, diminished):
+#         super().__init__()
+#         self.diminished = int(diminished)
 
 
 class CombatRow(BaseChatRow):
@@ -127,7 +134,8 @@ REGEXES = {
     re.compile("You have gained (\d+\.\d+) ([a-zA-Z ]+)"): (ChatType.SKILL, SkillRow, {}),
     re.compile("Your ([a-zA-Z ]+) has improved by (\d+\.\d+)"): (ChatType.SKILL, SkillRow, {}),
     re.compile("Your enhancer ([a-zA-Z0-9 ]+) on your .* broke."): (ChatType.ENHANCER, EnhancerBreakages, {}),
-    re.compile(r"You received (.*) x \((\d+)\) Value: (\d+\.\d+) PED"): (ChatType.LOOT, LootInstance, {})
+    re.compile(r"You received (.*) x \((\d+)\) Value: (\d+\.\d+) PED"): (ChatType.LOOT, LootInstance, {}),
+	# re.compile("Healing is diminished while moving"): (ChatType.DIMINISHED, DiminishedRow, {})
 }
 
 GLOBAL_REGEXES = {

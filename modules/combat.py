@@ -207,6 +207,18 @@ class HuntingTrip(object):
         self.loot_instance_cost += self.cost_per_shot
         self.total_cost += self.cost_per_shot
 
+    def add_heal_chat_row(self, row: HealRow):
+        self.total_heals += 1
+        self.total_heal_amount += row.amount
+        # self.heal_per_pec = self.total_heal_amount / self.total_heals
+        # if row.dimminshed:
+        #     self.total_dimminsh += 1
+        # self.total_cost += self.cost_per_heal
+
+# does this have to be its own class or can be handled by healing row as is different message in system log?
+    # def add_diminsh_chat_row(self, row: DiminshedRow):
+    #     self.total_dimminsh += 1
+
     def add_loot_instance_chat_row(self, row: LootInstance):
         ts = time.mktime(row.time.timetuple()) // 2
 
@@ -376,6 +388,8 @@ class CombatModule(BaseModule):
             cost = Decimal(self.ammo_burn) / Decimal(10000) + self.decay
             self.active_run.cost_per_shot = cost
 
+# work VVV
+
     def tick(self, lines: List[BaseChatRow]):
         for i in self.app.config.loadouts.value:
             self.app.config.selected_loadout = i
@@ -396,6 +410,11 @@ class CombatModule(BaseModule):
                 elif isinstance(chat_instance, LootInstance):
                     self.active_run.add_loot_instance_chat_row(chat_instance)
                     self.should_redraw_runs = True
+                elif isinstance(caht_instance, HealRow):
+                    self.active_run.add_heal_chat_row(chat_instance)
+                    # self.should_redraw_runs = True ????
+                # elif isinstance(chat_instance, DiminishedRow):
+                #     self.active_run.add_diminished_chat_row(chat_instance)
                 elif isinstance(chat_instance, EnhancerBreakages):
                     self.active_run.add_enhancer_break_row(chat_instance)
                 elif isinstance(chat_instance, SkillRow):
