@@ -222,6 +222,7 @@ class HuntingTrip(object):
     def add_loot_instance_chat_row(self, row: LootInstance):
         ts = time.mktime(row.time.timetuple()) // 2
 
+        # How to make this a seperate function with a bigger scope, or keep it in this fenction? -nikander
         # We dont want to consider sharp conversion as a loot event
         if row.name == "Universal Ammo":
             return
@@ -410,7 +411,7 @@ class CombatModule(BaseModule):
                 elif isinstance(chat_instance, LootInstance):
                     self.active_run.add_loot_instance_chat_row(chat_instance)
                     self.should_redraw_runs = True
-                elif isinstance(caht_instance, HealRow):
+                elif isinstance(chat_instance, HealRow):
                     self.active_run.add_heal_chat_row(chat_instance)
                     # self.should_redraw_runs = True ????
                 # elif isinstance(chat_instance, DiminishedRow):

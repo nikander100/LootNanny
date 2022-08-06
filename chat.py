@@ -40,10 +40,10 @@ class HealRow(BaseChatRow):
 
 # class DiminishedRow(BaseChatRow):
 
-#     def __init__(self, diminished):
-#         super().__init__()
-#         self.diminished = int(diminished)
-
+#   def __init__(self, diminished=False):
+#       super().__init__()
+#       self.diminished = diminished // do i need this or can i have a only self cause this case is basically a true/false condition.
+#       pass
 
 class CombatRow(BaseChatRow):
 
@@ -135,7 +135,7 @@ REGEXES = {
     re.compile("Your ([a-zA-Z ]+) has improved by (\d+\.\d+)"): (ChatType.SKILL, SkillRow, {}),
     re.compile("Your enhancer ([a-zA-Z0-9 ]+) on your .* broke."): (ChatType.ENHANCER, EnhancerBreakages, {}),
     re.compile(r"You received (.*) x \((\d+)\) Value: (\d+\.\d+) PED"): (ChatType.LOOT, LootInstance, {}),
-	# re.compile("Healing is diminished while moving"): (ChatType.DIMINISHED, DiminishedRow, {})
+	# re.compile("Healing is diminished while moving"): (ChatType.DIMINISHED, DiminishedRow, {"diminished": True})
 }
 
 GLOBAL_REGEXES = {
