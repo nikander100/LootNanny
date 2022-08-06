@@ -222,7 +222,7 @@ class HuntingTrip(object):
     def add_loot_instance_chat_row(self, row: LootInstance):
         ts = time.mktime(row.time.timetuple()) // 2
 
-        # How to make this a seperate function with a bigger scope, or keep it in this fenction? -nikander
+        # How to make this vvv a seperate function with a bigger scope, or keep it in this function? -nikander
         # We dont want to consider sharp conversion as a loot event
         if row.name == "Universal Ammo":
             return
