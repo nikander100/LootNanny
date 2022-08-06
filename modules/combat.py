@@ -17,6 +17,7 @@ from modules.markup import MarkupStore
 from data.weapons import ALL_WEAPONS
 from data.sights_and_scopes import SIGHTS, SCOPES
 from data.attachments import ALL_ATTACHMENTS
+from data.healingtools import ALL_HEALING_TOOLS
 
 RUNS_FILE = format_filename("runs.json")
 RUNS_DIRECTORY = format_filename("")
@@ -330,6 +331,10 @@ class CombatModule(BaseModule):
         self.combat_fields = {}
         self.loot_fields = {}
 
+        
+        self.weaponLoadout = None
+        self.healingtoolLoadout = None
+
         # Calculated Configuration
         self.ammo_burn = 0
         self.decay = 0
@@ -342,30 +347,68 @@ class CombatModule(BaseModule):
         self.multiplier_graph = None
         self.return_graph = None
 
-    def recalculateWeaponLoadout(self):
-        loadout = Loadout(*self.app.config.selected_loadout.value)
-        weapon = ALL_WEAPONS[loadout.weapon]
-        amp = ALL_ATTACHMENTS.get(loadout.amp)
-        ammo = weapon["ammo"] * (1 + (0.1 * loadout.damage_enh))
-        decay = weapon["decay"] * Decimal(1 + (0.1 * loadout.damage_enh))
-        if amp:
-            ammo += amp["ammo"]
-            decay += amp["decay"]
+    def loadLoadout(self):
+        if self.app.config.selected_loadout.value[0] in ALL_WEAPONS:
+            self.weaponLoadout = Loadout(*self.app.config.selected_loadout.value)
+        elif self.app.config.selected_loadout.value[0] in ALL_HEALING_TOOLS:
+            self.healingToolLoadout = HealingLoadout(*self.app.config.selected_loadout.value)
 
-        scope = SCOPES.get(loadout.scope)
-        if scope:
-            decay += scope["decay"]
-            ammo += scope["ammo"]
+    def recalculateLoadout(self):
+        self.weaponLoadout = None
+        self.healingToolLoadout = None
+        self.loadLoadout()
+        #loadout = Loadout(*self.app.config.selected_loadout.value)
+        ammo = 0.0
+        if not self.weaponLoadout is None:
+            weapon = ALL_WEAPONS[self.weaponLoadout.weapon]
+            amp = ALL_ATTACHMENTS.get(self.weaponLoadout.amp)
+            ammo = weapon["ammo"] * (1 + (0.1 * self.weaponLoadout.damage_enh))
+            decay = weapon["decay"] * Decimal(1 + (0.1 * self.weaponLoadout.damage_enh))
+            if amp:
+                ammo += amp["ammo"]
+                decay += amp["decay"]
 
-        sight_1 = SIGHTS.get(loadout.sight_1)
-        if sight_1:
-            decay += sight_1["decay"]
-            ammo += sight_1["ammo"]
+            scope = SCOPES.get(self.weaponLoadout.scope)
+            if scope:
+                decay += scope["decay"]
+                ammo += scope["ammo"]
 
-        sight_2 = SIGHTS.get(loadout.sight_2)
-        if sight_2:
-            decay += sight_2["decay"]
-            ammo += sight_2["ammo"]
+            sight_1 = SIGHTS.get(self.weaponLoadout.sight_1)
+            if sight_1:
+                decay += sight_1["decay"]
+                ammo += sight_1["ammo"]
+
+            sight_2 = SIGHTS.get(self.weaponLoadout.sight_2)
+            if sight_2:
+                decay += sight_2["decay"]
+                ammo += sight_2["ammo"]
+        elif not self.healingToolLoadout is None:
+            healingTool = ALL_HEALING_TOOLS[self.healingToolLoadout.heal_tool]
+            ammo = Decimal(healingTool["ammo"]) 
+            decay = healingTool["decay"] * (1 + (Decimal(0.05 * self.healingToolLoadout.heal_enh) - Decimal(0.05 * self.healingToolLoadout.economy_enh)))
+
+        # weapon = ALL_WEAPONS[loadout.weapon]
+        # amp = ALL_ATTACHMENTS.get(loadout.amp)
+        # ammo = weapon["ammo"] * (1 + (0.1 * loadout.damage_enh))
+        # decay = weapon["decay"] * Decimal(1 + (0.1 * loadout.damage_enh))
+        # if amp:
+        #     ammo += amp["ammo"]
+        #     decay += amp["decay"]
+
+        # scope = SCOPES.get(loadout.scope)
+        # if scope:
+        #     decay += scope["decay"]
+        #     ammo += scope["ammo"]
+
+        # sight_1 = SIGHTS.get(loadout.sight_1)
+        # if sight_1:
+        #     decay += sight_1["decay"]
+        #     ammo += sight_1["ammo"]
+
+        # sight_2 = SIGHTS.get(loadout.sight_2)
+        # if sight_2:
+        #     decay += sight_2["decay"]
+        #     ammo += sight_2["ammo"]
 
         self.app.combat_module.decay = decay
         self.app.combat_module.ammo_burn = ammo
