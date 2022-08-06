@@ -116,7 +116,6 @@ class LoadoutsTab(QWidget):
         self.delete_healing_tool_btn.setEnabled(True)
 
     def select_loadout(self):
-        # need to figure out what selection weapon or healing tool is done
         if not self.weapon_selected_index is None:      
             self.app.config.selected_loadout = self.app.config.loadouts.value[self.weapon_selected_index]
             self.active_loadout.setText(self.app.config.selected_loadout.value[0])
