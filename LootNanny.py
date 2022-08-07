@@ -94,7 +94,7 @@ class LootNanny(QWidget):
         self.theme_btn.clicked.connect(lambda: self.toggle_stylesheet())
         self.theme_btn.setStyleSheet("background-color: white; color: black;")
 
-        self.donate_btn = QPushButton("Donate :)")
+        self.donate_btn = QPushButton("Support This Project")
         self.donate_btn.setStyleSheet("background-color: blue;")
         self.donate_btn.released.connect(self.open_donation_window)
         statusBar.addWidget(self.donate_btn)
