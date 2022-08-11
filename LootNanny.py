@@ -107,7 +107,7 @@ class LootNanny(QWidget):
         self.initialize_from_config()
 
     def open_donation_window(self):
-        url = "https://www.paypal.com/donate?hosted_button_id=QN5CN9A52Q59E"
+        url = "https://www.paypal.com/donate/buttons/manage/JJ2WPXVBDW6YG"
         webbrowser.open(url, new=0)
 
     def initialize_from_config(self):
