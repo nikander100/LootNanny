@@ -8,7 +8,6 @@ import threading
 import os
 import json
 
-
 from modules.base import BaseModule
 from chat import BaseChatRow, CombatRow, LootInstance, SkillRow, EnhancerBreakages, HealRow, GlobalInstance
 from helpers import dt_to_ts, ts_to_dt, format_filename
@@ -345,7 +344,9 @@ class CombatModule(BaseModule):
 
         # Graphs
         self.multiplier_graph = None
-        self.return_graph = None
+        self.return_graph = None  
+
+        self.lastkeypress = None
 
     def recalculateLoadout(self):
         self.weaponLoadout = None
@@ -395,15 +396,32 @@ class CombatModule(BaseModule):
             cost = Decimal(self.ammo_burn) / Decimal(10000) + self.decay
             self.active_run.cost_per_shot = cost
 
-    def tick(self, lines: List[BaseChatRow]):
-        for i in self.app.config.loadouts.value:
-            self.app.config.selected_loadout = i
-            if keyboard.is_pressed(self.app.config.selected_loadout.value[7]):
-                print(self.app.config.selected_loadout.value[0])
-                self.recalculateWeaponFields()
-                break
+    def keypressed(self, event):
+        if not event.name == self.lastkeypress:
+            self.lastkeypress = event.name
+            found = False
 
+            # scan weapons for keymap match
+            for i in self.app.config.loadouts.value:
+                if event.name == i[7]:
+                    self.app.config.selected_loadout = i
+                    found = True
+                    break
+            
+            if not found:
+                # scan healing tools for keymap match
+                for i in self.app.config.healing_loadouts.value:
+                    if event.name == i[3]:
+                        self.app.config.selected_loadout = i
+                        found = True
+                        break
+
+            self.app.loadouts_tab.recalculateWeaponFields()
+            #print(self.app.config.selected_loadout.value[0])
+
+    def tick(self, lines: List[BaseChatRow]):
         if self.is_logging and not self.is_paused:
+            keyboard.on_press(self.keypressed)
 
             if self.active_run is None:
                 self.create_new_run()
