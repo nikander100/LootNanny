@@ -21,4 +21,4 @@ This will generate the latest release executable in the dist/ folder.
 * If you encounter `PermissionError: [WinError 5] Access is denied` errors when building via `pyinstaller`, build using an elevated command prompt ( Run as Administrator )
 
 ## LootNanny Setup Instructions
-[Click here for a quick setup guide](docs/SETUP.md)
+[Click here for a quick setup guide](https://github.com/nikander100/LootNanny/wiki/Quick-Setup)
