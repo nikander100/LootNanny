@@ -123,6 +123,7 @@ REGEXES = {
     re.compile("Critical hit - Additional damage! You inflicted (\d+\.\d+) points of damage"): (ChatType.DAMAGE, CombatRow, {"critical": True}),
     re.compile("You inflicted (\d+\.\d+) points of damage"): (ChatType.DAMAGE, CombatRow, {}),
     re.compile("You healed yourself (\d+\.\d+) points"): (ChatType.HEAL, HealRow, {}),
+	# re.compile("Healing is diminished while moving"): (ChatType.DIMINISHED, DiminishedRow, {"diminished": True})
     re.compile("Damage deflected!"): (ChatType.DEFLECT, BaseChatRow, {}),
     re.compile("You Evaded the attack"): (ChatType.EVADE, BaseChatRow, {}),
     re.compile("You missed"): (ChatType.DODGE, CombatRow, {"miss": True}),
@@ -135,7 +136,6 @@ REGEXES = {
     re.compile("Your ([a-zA-Z ]+) has improved by (\d+\.\d+)"): (ChatType.SKILL, SkillRow, {}),
     re.compile("Your enhancer ([a-zA-Z0-9 ]+) on your .* broke."): (ChatType.ENHANCER, EnhancerBreakages, {}),
     re.compile(r"You received (.*) x \((\d+)\) Value: (\d+\.\d+) PED"): (ChatType.LOOT, LootInstance, {}),
-	# re.compile("Healing is diminished while moving"): (ChatType.DIMINISHED, DiminishedRow, {"diminished": True})
 }
 
 GLOBAL_REGEXES = {
