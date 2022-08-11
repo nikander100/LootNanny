@@ -1,10 +1,11 @@
 from decimal import Decimal
 import os
 import json
+import keyboard
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtWidgets import QFileDialog, QTextEdit, QFormLayout, QHBoxLayout, QHeaderView, QTabWidget, QCheckBox, QGridLayout, QComboBox, QLineEdit, QLabel, QApplication, QWidget, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QFileDialog, QTextEdit, QFormLayout, QHBoxLayout, QHeaderView, QTabWidget, QCheckBox, QGridLayout, QComboBox, QLineEdit, QLabel, QApplication, QWidget, QPushButton, QVBoxLayout, QTableWidget, QTableWidgetItem, QKeySequenceEdit
 
 from data.weapons import ALL_WEAPONS
 from data.healingtools import ALL_HEALING_TOOLS
@@ -19,6 +20,10 @@ class LoadoutsTab(QWidget):
         super().__init__(*args, **kwargs)
 
         self.app: "LootNanny" = app
+
+        # TODO: set to the config selected items index
+        self.weapon_selected_index = None
+        self.healing_tool_selected_index = None
 
         layout = QVBoxLayout()
 
@@ -82,44 +87,51 @@ class LoadoutsTab(QWidget):
             self.recalculateWeaponFields()
 
     def weapon_table_selected(self):
+        self.healing_tool_selected_index = None
+        self.healing_tools.clearSelection()
         indexes = self.weapons.selectionModel().selectedRows()
         if not indexes:
             self.delete_weapon_btn.hide()
             self.select_loadout_btn.hide()
-            self.selected_index = None
+            self.weapon_selected_index = None
             return
 
         self.delete_weapon_btn.show()
         self.select_loadout_btn.show()
-        self.selected_index = indexes[-1].row()
+        self.weapon_selected_index = indexes[-1].row()
         self.delete_weapon_btn.setEnabled(True)
 
     def healing_tools_table_selected(self):
+        self.weapon_selected_index = None
+        self.weapons.clearSelection()
         indexes = self.healing_tools.selectionModel().selectedRows()
         if not indexes:
             self.delete_healing_tools_btn.hide()
             self.select_loadout_btn.hide()
-            self.selected_index = None
+            self.healing_tool_selected_index = None
             return
 
         self.delete_healing_tool_btn.show()
         self.select_loadout_btn.show()
-        self.selected_index = indexes[-1].row()
+        self.healing_tool_selected_index = indexes[-1].row()
         self.delete_healing_tool_btn.setEnabled(True)
 
     def select_loadout(self):
-        # need to figure out what selection weapon or healing tool is done
-        self.app.config.selected_loadout = self.app.config.loadouts.value[self.selected_index]
-        self.active_loadout.setText(self.app.config.selected_loadout.value[0])
+        if not self.weapon_selected_index is None:      
+            self.app.config.selected_loadout = self.app.config.loadouts.value[self.weapon_selected_index]
+        elif not self.healing_tool_selected_index is None:      
+            self.app.config.selected_loadout = self.app.config.healing_loadouts.value[self.healing_tool_selected_index]
+        else:
+            self.app.config.selected_loadout = ""
         self.recalculateWeaponFields()
 
     def delete_loadout(self):
-        del self.app.config.loadouts.value[self.selected_index]
+        del self.app.config.loadouts.value[self.weapon_selected_index]
         self.app.config.save()
         self.redraw_weapons()
 
     def delete_healing_tool_loadout(self):
-        del self.app.config.healing_loadouts.value[self.selected_index]
+        del self.app.config.healing_loadouts.value[self.healing_tool_selected_index]
         self.app.config.save()
         self.redraw_healing_tools()
 
@@ -195,7 +207,8 @@ class LoadoutsTab(QWidget):
         self.redraw_healing_tools()
 
     def recalculateWeaponFields(self):
-        self.app.combat_module.recalculateWeaponLoadout()
+        self.app.combat_module.recalculateLoadout()
+        self.active_loadout.setText(self.app.config.selected_loadout.value[0])
         self.ammo_burn_text.setText(str(int(self.app.combat_module.ammo_burn)))
         self.weapon_decay_text.setText("%.6f" % self.app.combat_module.decay)
         self.app.save_config()
@@ -275,8 +288,13 @@ class WeaponPopOut(QWidget):
         self.accuracy_enhancers_txt.editingFinished.connect(self.on_field_changed)
         layout.addLayout(form_inputs)
 
-        self.keymap_txt = QLineEdit(text="0")
-        form_inputs.addRow("KeyMap:", self.keymap_txt)
+        # self.keymap_txt = QLineEdit(text="0")
+        # form_inputs.addRow("KeyMap:", self.keymap_txt)
+        # self.keymap_txt.editingFinished.connect(self.on_field_changed)
+        # layout.addLayout(form_inputs)
+
+        self.keymap_txt = KeyMapLineEdit(self)
+        form_inputs.addRow("KeyMap:", self.keymap_txt) 
         self.keymap_txt.editingFinished.connect(self.on_field_changed)
         layout.addLayout(form_inputs)
 
@@ -388,8 +406,8 @@ class HealingToolPopOut(QWidget):
         self.economy_enhancers_txt.editingFinished.connect(self.on_field_changed)
         layout.addLayout(form_inputs)
 
-        self.keymap_txt = QLineEdit(text="0")
-        form_inputs.addRow("KeyMap:", self.keymap_txt)
+        self.keymap_txt = KeyMapLineEdit(self)
+        form_inputs.addRow("KeyMap:", self.keymap_txt) 
         self.keymap_txt.editingFinished.connect(self.on_field_changed)
         layout.addLayout(form_inputs)
 
@@ -441,3 +459,27 @@ class HealingToolPopOut(QWidget):
 
     def closeEvent(self, event):
         event.accept()  # let the window close
+
+class KeyMapLineEdit(QLineEdit):
+    def __init__(self, parent):
+        super().__init__()
+
+        self.keypressEventActive = False
+        self.lastkeypress = None
+
+    def focusInEvent(self, event):
+        if not self.keypressEventActive: 
+            keyboard.on_press(self.keyboardCallback)
+            self.keypressEventActive = True
+        super(KeyMapLineEdit, self).focusInEvent(event)
+
+    def focusOutEvent(self, event):
+        self.keypressEventActive = False
+        super(KeyMapLineEdit, self).focusOutEvent(event)
+
+    def keyboardCallback(self, event):            
+        if self.keypressEventActive:
+            if not event.name == self.lastkeypress:
+                self.lastkeypress = event.name
+                self.setMaxLength(len(event.name))
+                self.setText(event.name)

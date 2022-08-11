@@ -8,7 +8,6 @@ import threading
 import os
 import json
 
-
 from modules.base import BaseModule
 from chat import BaseChatRow, CombatRow, LootInstance, SkillRow, EnhancerBreakages, HealRow, GlobalInstance
 from helpers import dt_to_ts, ts_to_dt, format_filename
@@ -17,6 +16,7 @@ from modules.markup import MarkupStore
 from data.weapons import ALL_WEAPONS
 from data.sights_and_scopes import SIGHTS, SCOPES
 from data.attachments import ALL_ATTACHMENTS
+from data.healingtools import ALL_HEALING_TOOLS
 
 RUNS_FILE = format_filename("runs.json")
 RUNS_DIRECTORY = format_filename("")
@@ -343,6 +343,10 @@ class CombatModule(BaseModule):
         self.combat_fields = {}
         self.loot_fields = {}
 
+        # loadout types
+        self.weaponLoadout = None
+        self.healingtoolLoadout = None
+
         # Calculated Configuration
         self.ammo_burn = 0
         self.decay = 0
@@ -353,33 +357,49 @@ class CombatModule(BaseModule):
 
         # Graphs
         self.multiplier_graph = None
-        self.return_graph = None
+        self.return_graph = None  
 
-    def recalculateWeaponLoadout(self):
-        loadout = Loadout(*self.app.config.selected_loadout.value)
-        weapon = ALL_WEAPONS[loadout.weapon]
-        amp = ALL_ATTACHMENTS.get(loadout.amp)
-        ammo = weapon["ammo"] * (1 + (0.1 * loadout.damage_enh))
-        decay = weapon["decay"] * Decimal(1 + (0.1 * loadout.damage_enh))
-        if amp:
-            ammo += amp["ammo"]
-            decay += amp["decay"]
+        self.lastkeypress = None
 
-        scope = SCOPES.get(loadout.scope)
-        if scope:
-            decay += scope["decay"]
-            ammo += scope["ammo"]
+    def recalculateLoadout(self):
+        self.weaponLoadout = None
+        self.healingToolLoadout = None
 
-        sight_1 = SIGHTS.get(loadout.sight_1)
-        if sight_1:
-            decay += sight_1["decay"]
-            ammo += sight_1["ammo"]
+        if self.app.config.selected_loadout.value[0] in ALL_WEAPONS:
+            self.weaponLoadout = Loadout(*self.app.config.selected_loadout.value)
+        elif self.app.config.selected_loadout.value[0] in ALL_HEALING_TOOLS:
+            self.healingToolLoadout = HealingLoadout(*self.app.config.selected_loadout.value)
+        
+        ammo = 0.0
+        
+        if not self.weaponLoadout is None:
+            weapon = ALL_WEAPONS[self.weaponLoadout.weapon]
+            amp = ALL_ATTACHMENTS.get(self.weaponLoadout.amp)
+            ammo = weapon["ammo"] * (1 + (0.1 * self.weaponLoadout.damage_enh))
+            decay = weapon["decay"] * Decimal(1 + (0.1 * self.weaponLoadout.damage_enh))
+            if amp:
+                ammo += amp["ammo"]
+                decay += amp["decay"]
 
-        sight_2 = SIGHTS.get(loadout.sight_2)
-        if sight_2:
-            decay += sight_2["decay"]
-            ammo += sight_2["ammo"]
+            scope = SCOPES.get(self.weaponLoadout.scope)
+            if scope:
+                decay += scope["decay"]
+                ammo += scope["ammo"]
 
+            sight_1 = SIGHTS.get(self.weaponLoadout.sight_1)
+            if sight_1:
+                decay += sight_1["decay"]
+                ammo += sight_1["ammo"]
+
+            sight_2 = SIGHTS.get(self.weaponLoadout.sight_2)
+            if sight_2:
+                decay += sight_2["decay"]
+                ammo += sight_2["ammo"]
+        elif not self.healingToolLoadout is None:
+            healingTool = ALL_HEALING_TOOLS[self.healingToolLoadout.heal_tool]
+            ammo = Decimal(healingTool["ammo"]) 
+            decay = healingTool["decay"] * (1 + (Decimal(0.05 * self.healingToolLoadout.heal_enh) - Decimal(0.05 * self.healingToolLoadout.economy_enh)))
+        
         self.app.combat_module.decay = decay
         self.app.combat_module.ammo_burn = ammo
         self.update_active_run_cost()
@@ -389,17 +409,32 @@ class CombatModule(BaseModule):
             cost = Decimal(self.ammo_burn) / Decimal(10000) + self.decay
             self.active_run.cost_per_shot = cost
 
-# work VVV
+    def keypressed(self, event):
+        if not event.name == self.lastkeypress:
+            self.lastkeypress = event.name
+            found = False
+
+            # scan weapons for keymap match
+            for i in self.app.config.loadouts.value:
+                if event.name == i[7]:
+                    self.app.config.selected_loadout = i
+                    found = True
+                    break
+            
+            if not found:
+                # scan healing tools for keymap match
+                for i in self.app.config.healing_loadouts.value:
+                    if event.name == i[3]:
+                        self.app.config.selected_loadout = i
+                        found = True
+                        break
+
+            self.app.loadouts_tab.recalculateWeaponFields()
+            #print(self.app.config.selected_loadout.value[0])
 
     def tick(self, lines: List[BaseChatRow]):
-        for i in self.app.config.loadouts.value:
-            self.app.config.selected_loadout = i
-            if keyboard.is_pressed(self.app.config.selected_loadout.value[7]):
-                print(self.app.config.selected_loadout.value[0])
-                self.recalculateWeaponFields()
-                break
-
         if self.is_logging and not self.is_paused:
+            keyboard.on_press(self.keypressed)
 
             if self.active_run is None:
                 self.create_new_run()
