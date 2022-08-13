@@ -3,7 +3,8 @@
 
 ## How to build from source
 
-1. Install Python: [At Microsoft](https://docs.microsoft.com/en-us/windows/python/beginners#install-python)
+1. Install Python: [Download from Source](https://www.python.org/downloads/release/python-3913/)  
+preferably version 3.9.13
 2. Run the following commands to setup your python environment
 
 ```
