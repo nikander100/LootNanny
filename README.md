@@ -5,7 +5,7 @@
 
 1. Install Python: [Download from Source](https://www.python.org/downloads/release/python-3913/)  
 preferably version 3.9.13
-2. Run the following commands to setup your python environment
+2. Run the following commands to setup your python environment.
 
 ```
 cd $PATH_YOU_DOWNLOADED_THIS_REPO
