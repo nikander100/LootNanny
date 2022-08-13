@@ -31,12 +31,12 @@ class TestChatParsing(unittest.TestCase):
         self._internal(msg, expected)
 
     def test_parse_system_heal_message(self):
-        msg = "2021-09-21 09:46:31 You healed yourself 24.0 point"
+        msg = "2022-07-08 02:16:04 [System] [] You healed yourself 24.0 points"
         expected = LogLine(
-            "2021-09-21 09:46:31",
+            "2022-07-08 02:16:04",
             "System",
             "",
-            "You healed yourself 24.0 point"
+            "You healed yourself 24.0 points"
         )
         self._internal(msg, expected)
 

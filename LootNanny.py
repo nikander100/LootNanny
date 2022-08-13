@@ -326,7 +326,7 @@ class LootNanny(QWidget):
             self.combat_module.active_run = None
         self.runs.clear()
         self.combat_module.update_runs_table()
-        self.combat_module.save_runs(force=True)
+        self.combat_module.save_runs(force=True) # does this save it correctly? added () to the end of runs
         self.clear_run_selection()
 
     def analysisTabUI(self):

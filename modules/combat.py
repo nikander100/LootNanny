@@ -50,7 +50,7 @@ class HuntingTrip(object):
         self.notes = ""
 
         self.cost_per_shot: Decimal = cost_per_shot
-
+        # self.cost_per_heal: Decimal = cost_per_heal
         self.tt_return = 0
         self.globals = 0
         self.hofs = 0
@@ -83,13 +83,18 @@ class HuntingTrip(object):
         self.total_crits = 0
         self.total_misses = 0
 
+        # Healing Stats
+        self.total_heals = 0
+        self.total_healed = 0
+
     def serialize_run(self):
         return {
             "start": dt_to_ts(self.time_start),
             "end": dt_to_ts(self.time_end) if self.time_end else None,
             "notes": self.notes,
             "config": {
-                "cps": str(self.cost_per_shot)
+                "cps": str(self.cost_per_shot),
+                # "cph": str(self.cost_per_heal)
             },
             "summary": {
                 "tt_return": str(self.tt_return),
@@ -109,6 +114,10 @@ class HuntingTrip(object):
                 "dmg": self.total_damage,
                 "crits": self.total_crits,
                 "misses": self.total_misses
+            },
+            "healing": {
+                "heals": self.total_heals,
+                "total healed": self.total_healed,
             },
             "graphs": {
                 "returns": self.return_over_time,
@@ -211,8 +220,6 @@ class HuntingTrip(object):
         self.total_heals += 1
         self.total_heal_amount += row.amount
         # self.heal_per_pec = self.total_heal_amount / self.total_heals
-        # if row.dimminshed:
-        #     self.total_dimminsh += 1
         # self.total_cost += self.cost_per_heal
 
 # does this have to be its own class or can be handled by healing row as is different message in system log?

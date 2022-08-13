@@ -23,7 +23,7 @@ class ChatType(str, enum.Enum):
     ENHANCER = "enhancer"
     LOOT = "loot"
     GLOBAL = "global"
-    # DIMINISHED = "diminished"""
+    # DIMINISHED = "diminished"
 
 
 class BaseChatRow(object):
