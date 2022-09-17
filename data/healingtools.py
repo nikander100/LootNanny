@@ -14,7 +14,7 @@ with open(data_filename, 'r') as f:
         healing_tool_data["decay"] = Decimal(healing_tool_data["decay"])
         ALL_HEALING_TOOLS[name] = healing_tool_data
 
-FIELDS = ("name", "type", "decay", "ammo")
+FIELDS = ("name", "type", "heal", "startinterval", "decay", "ammo", "healovertime","healovertimeduration")
 
 if __name__ == "__main__":
     import sys
